@@ -1,5 +1,5 @@
-const { matchedData } = require("express-validator");
-
+import { matchedData } from "express-validator";
+import userModel from "../models/user.model.js";
 export const GetAllUsers = async (req, res) => {
   try {
     const users = await userModel.find();
@@ -24,9 +24,11 @@ export const GetUserId = async (req, res) => {
 
 export const CreateUser = async (req, res) => {
   try {
+    console.log("Body:", req.body);
+    console.log("Matched:", matchedData(req, { locations: ["body"] }));
     const data = matchedData(req, { locations: ["body"] });
     const user = await userModel.create(data);
-    res.json(201).json(user);
+    res.json(201).json({ message: "Usuario creado correctamente", user });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error al crear el usuario" });

@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 
 const userSchema = new Schema(
   {
@@ -53,5 +53,7 @@ userSchema.virtual("events", {
   localField: "_id",
   foreignField: "organizer",
 });
-const userModel = model("user", userSchema);
-export default userModel;
+const UserModel = model("User", userSchema);
+export default UserModel;
+
+UserModel.find().populate("events");

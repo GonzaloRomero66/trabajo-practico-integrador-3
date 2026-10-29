@@ -63,5 +63,7 @@ const eventSchema = new Schema({
     },
   ],
 });
-const eventModel = model("event", eventSchema);
-export default eventModel;
+const EventModel = model("event", eventSchema);
+export default EventModel;
+
+EventModel.find().populate("organizer");

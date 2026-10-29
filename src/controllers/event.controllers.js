@@ -1,5 +1,5 @@
 import { body, matchedData } from "express-validator";
-import eventModel from "../models/event";
+import eventModel from "../models/event.model.js";
 
 export const GetAllEvent = async (req, res) => {
   try {
@@ -34,14 +34,10 @@ export const CreateEvent = async (req, res) => {
 export const UpdateEvent = async (req, res) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
-    const event = await eventModel.findByIdAndUpdate(
-      req.params.id,
-      data,
-      {
-        returnDocument: "after",
-      },
-      { Runvalidators: true },
-    );
+    const event = await eventModel.findByIdAndUpdate(req.params.id, data, {
+      returnDocument: "after",
+      Runvalidators: true,
+    });
     if (!event) {
       return res.status(404).json({ message: "Evento no encontrado" });
     }
@@ -54,11 +50,10 @@ export const UpdateEvent = async (req, res) => {
 };
 export const DeleteEvent = async (req, res) => {
   try {
-    const event = await eventModel.findByIdAndUpdate(
-      req.params.id,
-      { deleted: true },
-      { returnDocument: "after" },
-    );
+    const event = await eventModel.findByIdAndUpdate(req.params.id, {
+      deleted: true,
+      returnDocument: "after",
+    });
     if (!event) {
       return res.status(404).json({ message: "Evento no encontrado" });
     }
