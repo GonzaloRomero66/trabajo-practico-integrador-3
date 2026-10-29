@@ -7,7 +7,10 @@ import {
   DeleteUser,
 } from "../controllers/user.controllers.js";
 
-import validateCreateUser from "../middlewares/user.validations.js";
+import {
+  validateCreateUser,
+  validateUpdateUser,
+} from "../middlewares/validations/user.validations.js";
 const router = Router();
 
 router.get("/", GetAllUsers);

@@ -1,7 +1,11 @@
 import { body } from "express-validator";
 import mongoose from "mongoose";
-import EventModel from "../models/event.model.js";
-import CategoryModel from "../models/category.model.js";
+import EventModel from "../../models/event.model.js";
+import CategoryModel from "../../models/category.model.js";
+
+export const idEventValidation = [
+  param("id").isMongoId().withMessage("El ID del evento no es válido"),
+];
 
 export const validateCreateEvent = [
   body("title")
@@ -143,33 +147,26 @@ export const validateUpdateEvent = [
       if (!event) {
         throw new Error("Evento no encontrado");
       }
-
       const startDate = req.body.startDate || event.startDate;
-
       if (new Date(endDate) <= new Date(startDate)) {
         throw new Error(
           "La fecha de finalización debe ser posterior a la de inicio",
         );
       }
-
       return true;
     }),
-
   body("capacity")
     .optional()
     .isInt({ min: 1 })
     .withMessage("La capacidad debe ser un entero mayor o igual a 1"),
-
   body("price")
     .optional()
     .isFloat({ min: 0 })
     .withMessage("El precio debe ser un número mayor o igual a 0"),
-
   body("status")
     .optional()
     .isIn(["scheduled", "cancelled", "finished"])
     .withMessage("El estado debe ser scheduled, cancelled o finished"),
-
   body("categories")
     .optional()
     .isArray()
@@ -192,20 +189,44 @@ export const validateUpdateEvent = [
     .withMessage("El lugar no puede estar vacío")
     .isLength({ min: 3, max: 100 })
     .withMessage("El lugar debe tener entre 3 y 100 caracteres"),
-
   body("location.address")
     .optional()
     .notEmpty()
     .withMessage("La dirección no puede estar vacía")
     .isLength({ min: 5, max: 150 })
     .withMessage("La dirección debe tener entre 5 y 150 caracteres"),
-
   body("location.city")
     .optional()
     .notEmpty()
     .withMessage("La ciudad no puede estar vacía")
     .isLength({ min: 2, max: 50 })
     .withMessage("La ciudad debe tener entre 2 y 50 caracteres"),
+];
+
+export const eventExistsValidation = [
+  param("id")
+    .isMongoId()
+    .withMessage("El ID del evento no es válido")
+    .bail()
+    .custom(async (id, { req }) => {
+      const event = await Event.findOne({
+        _id: id,
+        deleted: false,
+      });
+
+      if (!event) {
+        throw new Error("Evento no encontrado");
+      }
+
+      if (
+        req.user.role !== "ADMIN" &&
+        event.creator.toString() !== req.user.id
+      ) {
+        throw new Error("No tenés permiso para modificar este evento");
+      }
+
+      return true;
+    }),
 ];
 
 export default validateCreateEvent;

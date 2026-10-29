@@ -1,5 +1,11 @@
 import { body } from "express-validator";
-import UserModel from "../models/user.model.js";
+import UserModel from "../../models/user.model.js";
+import { param } from "express-validator";
+
+export const idParamValidation = [
+  param("id").isMongoId().withMessage("El ID del usuario no es válido"),
+];
+
 export const validateCreateUser = [
   body("username")
     .custom(async (username) => {
@@ -162,5 +168,22 @@ export const validateUpdateUser = [
     .isNumeric()
     .withMessage("El telefono tiene que ser solo numeros"),
 ];
+export const userExistsValidation = [
+  param("id")
+    .isMongoId()
+    .withMessage("El ID del usuario no es válido")
+    .bail()
+    .custom(async (id) => {
+      const user = await User.findOne({
+        _id: id,
+        deleted: false,
+      });
 
+      if (!user) {
+        throw new Error("Usuario no encontrado");
+      }
+
+      return true;
+    }),
+];
 export default validateCreateUser;
