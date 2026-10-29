@@ -58,7 +58,7 @@ export const validateCreateUser = [
     .withMessage("El segundo nombre no puede estar vacio"),
   body("profile.birthData")
     .optional()
-    .isISO8601()
+    .isDate()
     .withMessage("La fecha de nacimiento debe ser válida")
     .custom((date) => {
       if (new Date(date) > new Date()) {
@@ -145,7 +145,7 @@ export const validateUpdateUser = [
     .withMessage("El segundo nombre no puede estar vacio"),
   body("profile.birthData")
     .optional()
-    .isISO8601()
+    .isDate()
     .withMessage("La fecha de nacimiento debe ser válida")
     .custom((date) => {
       if (new Date(date) > new Date()) {
