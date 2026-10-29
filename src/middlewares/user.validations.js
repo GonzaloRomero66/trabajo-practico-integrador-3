@@ -1,3 +1,4 @@
+import { body } from "express-validator";
 export const validateCreateUser = [
   body("username").notEmpty().withMessage("El username no puede estar vacio"),
   body("email")
@@ -21,11 +22,6 @@ export const validateCreateUser = [
   body("profile.phone")
     .notEmpty()
     .withMessage("El telefono no puede estar vacio"),
-  body("profile.deletedAt")
-    .notEmpty()
-    .withMessage("El estado no puede estar vacio")
-    .isBoolean()
-    .withMessage("El estado tiene que ser true o false"),
 ];
 
 export default validateCreateUser;

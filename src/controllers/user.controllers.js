@@ -28,7 +28,7 @@ export const CreateUser = async (req, res) => {
     console.log("Matched:", matchedData(req, { locations: ["body"] }));
     const data = matchedData(req, { locations: ["body"] });
     const user = await userModel.create(data);
-    res.json(201).json({ message: "Usuario creado correctamente", user });
+    res.status(201).json({ message: "Usuario creado correctamente", user });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error al crear el usuario" });
