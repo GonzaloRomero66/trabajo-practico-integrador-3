@@ -36,10 +36,16 @@ export const CreateUser = async (req, res) => {
 export const UpdateUser = async (req, res) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
-    const user = await userModel.findByIdAndUpdate(req.params.id, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
+    const user = await userModel.findByIdAndUpdate(
+      req.params.id,
+      data,
+      {
+        returnDocument: "after",
+      },
+      {
+        runValidators: true,
+      },
+    );
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
@@ -47,7 +53,7 @@ export const UpdateUser = async (req, res) => {
       .status(200)
       .json({ message: "Usuario actualizado correctamente", user });
   } catch (error) {
-    res.status(404).json({ message: "Error al actualizar el usuario" });
+    res.status(500).json({ message: "Error al actualizar el usuario" });
   }
 };
 
