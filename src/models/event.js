@@ -1,5 +1,4 @@
-import { Schema } from "mongoose";
-import { describe } from "node:test";
+import { Schema, model } from "mongoose";
 
 const eventSchema = new Schema({
   title: {
@@ -23,6 +22,7 @@ const eventSchema = new Schema({
   capacity: {
     type: Number,
     min: 1,
+    validate: Number.isInteger,
   },
   price: {
     type: Number,
@@ -32,7 +32,7 @@ const eventSchema = new Schema({
   status: {
     type: String,
     enum: ["scheduled", "cancelled", "finished"],
-    default: scheduled,
+    default: "scheduled",
   },
   location: {
     venue: {
@@ -40,7 +40,7 @@ const eventSchema = new Schema({
       minlength: 3,
       maxlength: 100,
     },
-    addres: {
+    address: {
       type: String,
       minlength: 5,
       maxlength: 150,
@@ -50,8 +50,18 @@ const eventSchema = new Schema({
       minlength: 2,
       maxlength: 50,
     },
-    organizer: {
-      ref: "User",
-    },
   },
+  organizer: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  categories: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+    },
+  ],
 });
+const eventModel = model("event", eventSchema);
+export default eventModel;
