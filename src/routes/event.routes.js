@@ -5,7 +5,7 @@ import {
   CreateEvent,
   UpdateEvent,
   DeleteEvent,
-} from "../controllers/event.controllers.js";
+} from "../controllers/event.controller.js";
 
 import {
   validateCreateEvent,
