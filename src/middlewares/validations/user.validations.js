@@ -62,7 +62,7 @@ export const validateCreateUser = [
     .withMessage("El segundo nombre solo puede tener letras")
     .notEmpty()
     .withMessage("El segundo nombre no puede estar vacio"),
-  body("profile.birthData")
+  body("profile.birthDate")
     .optional()
     .isDate()
     .withMessage("La fecha de nacimiento debe ser válida")
@@ -149,7 +149,7 @@ export const validateUpdateUser = [
     .withMessage("El segundo nombre solo puede tener letras")
     .notEmpty()
     .withMessage("El segundo nombre no puede estar vacio"),
-  body("profile.birthData")
+  body("profile.birthDate")
     .optional()
     .isDate()
     .withMessage("La fecha de nacimiento debe ser válida")
