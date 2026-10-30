@@ -32,7 +32,7 @@ export const Login = async (req, res, next) => {
     const user = await userModel
       .findOne({
         email: data.email,
-        deleted: false,
+        deletedAt: null,
       })
       .select("+password");
 
@@ -83,14 +83,14 @@ export const GetProfile = async (req, res, next) => {
   try {
     const user = await userModel.findOne({
       _id: req.user.id,
-      deleted: false,
+      deletedAt: null,
     });
     if (!user) {
       return res.status(404).json({
         message: "Usuario no encontrado",
       });
     }
-    return res.status(201).json({
+    return res.status(200).json({
       message: "Perfil obtenido correctamente",
       resource: user,
     });
