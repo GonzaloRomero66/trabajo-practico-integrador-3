@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import { Category } from "../../models/Category.js";
+import { Category } from "../../models/category.model.js";
 
 export const idCategoryValidation = [
   param("id").isMongoId().withMessage("El ID de la categoría no es válido"),
