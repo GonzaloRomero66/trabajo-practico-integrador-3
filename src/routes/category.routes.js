@@ -7,6 +7,8 @@ import {
   DeleteCategory,
 } from "../controllers/category.controllers.js";
 
+import { authorizeRoles } from "../middlewares/authorizerole.js";
+import { auth } from "../middlewares/auth.js";
 import {
   createCategoryValidation,
   updateCategoryValidation,
@@ -19,14 +21,30 @@ const router = Router();
 
 router.get("/", GetAllCategory);
 router.get("/:id", idCategoryValidation, validate, GetCategoryId);
-router.post("/", createCategoryValidation, validate, CreateCategory);
+router.post(
+  "/",
+  auth,
+  authorizeRoles("admin"),
+  createCategoryValidation,
+  validate,
+  CreateCategory,
+);
 router.put(
   "/:id",
+  auth,
+  authorizeRoles("admin"),
   idCategoryValidation,
   updateCategoryValidation,
   validate,
   UpdateCategory,
 );
-router.delete("/:id", idCategoryValidation, validate, DeleteCategory);
+router.delete(
+  "/:id",
+  auth,
+  authorizeRoles("admin"),
+  idCategoryValidation,
+  validate,
+  DeleteCategory,
+);
 
 export default router;
