@@ -5,18 +5,22 @@ import {
   CreateUser,
   UpdateUser,
   DeleteUser,
-} from "../controllers/user.controllers.js";
+} from "../controllers/user.controller.js";
 
 import {
   validateCreateUser,
   validateUpdateUser,
+  idParamValidation,
 } from "../middlewares/validations/user.validations.js";
+
+import { validate } from "../middlewares/validate.js";
+
 const router = Router();
 
 router.get("/", GetAllUsers);
-router.get("/:id", GetUserId);
+router.get("/:id", idParamValidation, validate, GetUserId);
 router.post("/", validateCreateUser, CreateUser);
-router.put("/:id", UpdateUser);
-router.delete("/:id", DeleteUser);
+router.put("/:id", idParamValidation, validateUpdateUser, validate, UpdateUser);
+router.delete("/:id", idParamValidation, DeleteUser);
 
 export default router;
