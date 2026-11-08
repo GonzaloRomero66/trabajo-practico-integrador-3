@@ -3,17 +3,20 @@ import { Schema, model } from "mongoose";
 const userSchema = new Schema(
   {
     username: {
+      required: true,
       type: String,
       unique: true,
       minlength: 3,
       maxlength: 20,
     },
     email: {
+      required: true,
       type: String,
       unique: true,
       match: /.+\@.+\..+/,
     },
     password: {
+      required: true,
       type: String,
     },
     role: {
@@ -32,7 +35,7 @@ const userSchema = new Schema(
         minlength: 2,
         maxlength: 50,
       },
-      birthData: {
+      birthDate: {
         type: Date,
         optional: true,
       },
@@ -40,13 +43,18 @@ const userSchema = new Schema(
         type: String,
         optional: true,
       },
-      deletedAt: {
-        type: Date,
-        default: null,
-      },
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } },
+  {
+    timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 userSchema.virtual("events", {
   ref: "Event",
@@ -55,5 +63,3 @@ userSchema.virtual("events", {
 });
 const UserModel = model("User", userSchema);
 export default UserModel;
-
-UserModel.find().populate("events");
