@@ -5,7 +5,7 @@ import {
   CreateCategory,
   UpdateCategory,
   DeleteCategory,
-} from "../controllers/category.controllers.js";
+} from "../controllers/category.controller.js";
 
 import { authorizeRoles } from "../middlewares/authorizerole.js";
 import { auth } from "../middlewares/auth.js";

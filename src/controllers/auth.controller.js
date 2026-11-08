@@ -1,13 +1,13 @@
 import { matchedData } from "express-validator";
 import { generateToken } from "../helpers/jwt.js";
-import { User } from "../models/user.model.js";
+import userModel from "../models/user.model.js";
 import { hashPassword, comparePassword } from "../helpers/bcrypt.js";
 
 export const Register = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
 
-    const user = await User.create({
+    const user = await userModel.create({
       username: data.username,
       email: data.email,
       password: await hashPassword(data.password),
@@ -29,10 +29,12 @@ export const Register = async (req, res, next) => {
 export const Login = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
-    const user = await User.findOne({
-      email: data.email,
-      deleted: false,
-    }).select("+password");
+    const user = await userModel
+      .findOne({
+        email: data.email,
+        deleted: false,
+      })
+      .select("+password");
 
     if (!user) {
       return res
@@ -79,7 +81,7 @@ export const Logout = async (req, res, next) => {
 };
 export const GetProfile = async (req, res, next) => {
   try {
-    const user = await User.findOne({
+    const user = await userModel.findOne({
       _id: req.user.id,
       deleted: false,
     });

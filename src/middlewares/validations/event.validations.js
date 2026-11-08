@@ -2,7 +2,7 @@ import { body } from "express-validator";
 import mongoose from "mongoose";
 import EventModel from "../../models/event.model.js";
 import CategoryModel from "../../models/category.model.js";
-
+import { param } from "express-validator";
 export const idEventValidation = [
   param("id").isMongoId().withMessage("El ID del evento no es válido"),
 ];

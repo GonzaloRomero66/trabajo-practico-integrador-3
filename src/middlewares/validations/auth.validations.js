@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { User } from "../../models/user.model.js";
+import userModel from "../../models/user.model.js";
 
 export const validateRegister = [
   body("username")
@@ -9,7 +9,7 @@ export const validateRegister = [
     .isLength({ min: 3, max: 20 })
     .withMessage("El username tiene que ser entre 3 a 20 caracteres")
     .custom(async (username) => {
-      const user = await User.findOne({
+      const user = await userModel.findOne({
         username,
       });
       if (user) {
@@ -24,7 +24,7 @@ export const validateRegister = [
     .withMessage("El email tiene que ser un email valido")
     .normalizeEmail()
     .custom(async (email) => {
-      const existingemail = await User.findOne({ email });
+      const existingemail = await userModel.findOne({ email });
       if (existingemail) {
         throw new Error("El email ya esta registrado");
       }
