@@ -1,5 +1,26 @@
 import { Schema, model } from "mongoose";
 
+const profileSchema = new Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+    birthDate: { type: Date },
+    phone: { type: String, trim: true },
+  },
+  { _id: false, versionKey: false },
+);
 const userSchema = new Schema(
   {
     username: {
@@ -18,41 +39,28 @@ const userSchema = new Schema(
     password: {
       required: true,
       type: String,
+      select: false,
+    },
+    profile: {
+      type: profileSchema,
+      required: true,
     },
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
-    profile: {
-      firstName: {
-        type: String,
-        minlength: 2,
-        maxlength: 50,
-      },
-      lastName: {
-        type: String,
-        minlength: 2,
-        maxlength: 50,
-      },
-      birthDate: {
-        type: Date,
-        optional: true,
-      },
-      phone: {
-        type: String,
-        optional: true,
-      },
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
   },
   {
     timestamps: true,
     versionKey: false,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (doc, ret) => {
+        delete ret.password;
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   },
 );
