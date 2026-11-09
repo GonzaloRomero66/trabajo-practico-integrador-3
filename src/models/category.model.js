@@ -6,14 +6,20 @@ const categorySchema = new Schema(
       unique: true,
       minlength: 2,
       maxlength: 30,
+      required: true,
+      trim: true,
     },
     description: {
       type: String,
-      optional: true,
       maxlength: 200,
     },
   },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } },
+  {
+    timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 categorySchema.virtual("events", {
