@@ -1,8 +1,15 @@
 {
+  "name": "trabajo-practico-integrador-3",
+  "version": "1.0.0",
+  "description": "API REST de usuarios, eventos y categorias con Express, MongoDB y JWT",
+  "main": "app.js",
   "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
