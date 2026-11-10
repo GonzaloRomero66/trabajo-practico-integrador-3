@@ -27,6 +27,7 @@ const userSchema = new Schema(
       required: true,
       type: String,
       unique: true,
+      trim: true,
       minlength: 3,
       maxlength: 20,
     },
@@ -34,6 +35,8 @@ const userSchema = new Schema(
       required: true,
       type: String,
       unique: true,
+      trim: true,
+      lowercase: true,
       match: /.+\@.+\..+/,
     },
     password: {
@@ -49,6 +52,10 @@ const userSchema = new Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
