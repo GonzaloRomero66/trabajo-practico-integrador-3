@@ -1,13 +1,19 @@
 import { body } from "express-validator";
 import userModel from "../../models/user.model.js";
+import { profileRules } from "./profile.validations.js";
 
 export const validateRegister = [
   body("username")
     .trim()
     .notEmpty()
     .withMessage("El username no puede estar vacio")
+    .bail()
     .isLength({ min: 3, max: 20 })
     .withMessage("El username tiene que ser entre 3 a 20 caracteres")
+    .bail()
+    .isAlphanumeric()
+    .withMessage("El username tiene que ser alfanumerico")
+    .bail()
     .custom(async (username) => {
       const user = await userModel.findOne({
         username,
@@ -18,11 +24,14 @@ export const validateRegister = [
       return true;
     }),
   body("email")
+    .trim()
+    .toLowerCase()
     .notEmpty()
     .withMessage("El email no tiene que estar vacio")
+    .bail()
     .isEmail()
     .withMessage("El email tiene que ser un email valido")
-    .normalizeEmail()
+    .bail()
     .custom(async (email) => {
       const existingemail = await userModel.findOne({ email });
       if (existingemail) {
@@ -33,22 +42,33 @@ export const validateRegister = [
   body("password")
     .notEmpty()
     .withMessage("La contraseña no puede estar vacia")
+    .bail()
     .isLength({ min: 8 })
     .withMessage("La contraseña debe de tener al menos 8 caracteres")
+    .bail()
     .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).*$/)
     .withMessage(
       "La contraseña debe tener al menos una mayúscula, una minúscula y un número",
     ),
+  ...profileRules({ required: true, prefix: "profile" }),
 ];
 
 export const validateLogin = [
   body("email")
+    .trim()
+    .toLowerCase()
     .notEmpty()
     .withMessage("El email no puede estar vacio")
+    .bail()
     .isEmail()
-    .withMessage("El email tiene que ser un email valido")
-    .normalizeEmail(),
+    .withMessage("El email tiene que ser un email valido"),
   body("password")
     .notEmpty()
     .withMessage("La contraseña no tiene que estar vacia"),
 ];
+
+// el perfil se actualiza con los campos en la raiz del body
+export const validateUpdateProfile = profileRules({
+  required: false,
+  prefix: "",
+});
