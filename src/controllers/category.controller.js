@@ -1,26 +1,32 @@
 import { matchedData } from "express-validator";
 import categoryModel from "../models/category.model.js";
-export const GetAllCategory = async (req, res) => {
+import eventModel from "../models/event.model.js";
+
+export const GetAllCategory = async (req, res, next) => {
   try {
-    const category = await categoryModel.find();
-    res.json(category);
+    const categories = await categoryModel.find();
+    res.status(200).json(categories);
   } catch (error) {
-    res.status(500).json({ message: "Error al traer todas las categorias" });
-  }
-};
-export const GetCategoryId = async (req, res) => {
-  try {
-    const category = await categoryModel.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ message: "Categoria no encontrada" });
-    }
-    res.json(category);
-  } catch (error) {
-    res.status(500).json({ message: "Error al encontrar la categoria" });
+    next(error);
   }
 };
 
-export const CreateCategory = async (req, res) => {
+export const GetCategoryId = async (req, res, next) => {
+  try {
+    const category = await categoryModel
+      .findById(req.params.id)
+      .populate("events");
+
+    if (!category) {
+      return res.status(404).json({ message: "Categoria no encontrada" });
+    }
+    res.status(200).json(category);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const CreateCategory = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
     const category = await categoryModel.create(data);
@@ -28,12 +34,11 @@ export const CreateCategory = async (req, res) => {
       .status(201)
       .json({ message: "Categoria creada correctamente", category });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error al crear la categoria" });
+    next(error);
   }
 };
 
-export const UpdateCategory = async (req, res) => {
+export const UpdateCategory = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
     const category = await categoryModel.findByIdAndUpdate(
@@ -45,23 +50,29 @@ export const UpdateCategory = async (req, res) => {
       return res.status(404).json({ message: "Categoria no encontrada" });
     }
     res
-      .status(201)
+      .status(200)
       .json({ message: "Categoria actualizada correctamente", category });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la categoria" });
+    next(error);
   }
 };
-export const DeleteCategory = async (req, res) => {
+
+export const DeleteCategory = async (req, res, next) => {
   try {
-    const category = await categoryModel.findByIdAndUpdate(req.params.id, {
-      deleted: true,
-      returnDocument: "after",
-    });
+    const category = await categoryModel.findByIdAndDelete(req.params.id);
+
     if (!category) {
       return res.status(404).json({ message: "Categoria no encontrada" });
     }
-    res.json({ message: "categoria eliminada correctamente" });
+
+    // eliminacion en cascada: se quita la categoria de todos los eventos
+    await eventModel.updateMany(
+      { categories: category._id },
+      { $pull: { categories: category._id } },
+    );
+
+    res.status(200).json({ message: "Categoria eliminada correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la categoria" });
+    next(error);
   }
 };
