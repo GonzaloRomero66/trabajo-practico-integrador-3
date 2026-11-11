@@ -1,75 +1,85 @@
 import { matchedData } from "express-validator";
 import userModel from "../models/user.model.js";
-export const GetAllUsers = async (req, res) => {
+import eventModel from "../models/event.model.js";
+import { hashPassword } from "../helpers/bcrypt.js";
+import { flattenObject } from "../helpers/flatten.js";
+
+export const GetAllUsers = async (req, res, next) => {
   try {
-    const users = await userModel.find();
-    res.json(users);
+    const users = await userModel.find({ deletedAt: null }).populate("events");
+    res.status(200).json(users);
   } catch (error) {
-    res.status(404).json({ message: "Error en traer todos los usuarios" });
+    next(error);
   }
 };
 
-export const GetUserId = async (req, res) => {
+export const GetUserId = async (req, res, next) => {
   try {
-    const user = await userModel.findById(req.params.id);
+    const user = await userModel
+      .findOne({ _id: req.params.id, deletedAt: null })
+      .populate("events");
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener al usuario" });
+    next(error);
   }
 };
 
-export const CreateUser = async (req, res) => {
+export const UpdateUser = async (req, res, next) => {
   try {
-    console.log("Body:", req.body);
-    console.log("Matched:", matchedData(req, { locations: ["body"] }));
     const data = matchedData(req, { locations: ["body"] });
-    const user = await userModel.create(data);
-    res.status(201).json({ message: "Usuario creado correctamente", user });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error al crear el usuario" });
-  }
-};
+    const user = await userModel.findOne({
+      _id: req.params.id,
+      deletedAt: null,
+    });
 
-export const UpdateUser = async (req, res) => {
-  try {
-    const data = matchedData(req, { locations: ["body"] });
-    const user = await userModel.findByIdAndUpdate(
-      req.params.id,
-      data,
-      {
-        returnDocument: "after",
-      },
-      {
-        runValidators: true,
-      },
-    );
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
+
+    if (data.password) {
+      data.password = await hashPassword(data.password);
+    }
+
+    user.set(flattenObject(data));
+    await user.save();
+
     res
       .status(200)
       .json({ message: "Usuario actualizado correctamente", user });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar el usuario" });
+    next(error);
   }
 };
 
-export const DeleteUser = async (req, res) => {
+export const DeleteUser = async (req, res, next) => {
   try {
-    const user = await userModel.findByIdAndUpdate(
-      req.params.id,
-      { deleted: true },
-      { returnDocument: "after" },
-    );
+    const user = await userModel.findOne({
+      _id: req.params.id,
+      deletedAt: null,
+    });
+
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
+
+    // eliminacion logica
+    user.deletedAt = new Date();
+    await user.save();
+
+    // eliminacion en cascada de los eventos que organizaba
+    const { deletedCount } = await eventModel.deleteMany({
+      organizer: user._id,
+    });
+
+    res.status(200).json({
+      message: "Usuario eliminado correctamente",
+      eventosEliminados: deletedCount,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el usuario" });
+    next(error);
   }
 };
