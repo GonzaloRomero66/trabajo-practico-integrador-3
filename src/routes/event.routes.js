@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   GetAllEvent,
+  GetMyEvents,
   GetEventId,
   CreateEvent,
   UpdateEvent,
@@ -14,36 +15,32 @@ import {
 } from "../middlewares/validations/event.validations.js";
 
 import { validate } from "../middlewares/validate.js";
-import { authorizeRoles } from "../middlewares/authorizerole.js";
-import { auth } from "../middlewares/auth.js";
+import { authMiddleware } from "../middlewares/auth.js";
+import { ownerOrAdminMiddleware } from "../middlewares/ownerOrAdmin.js";
 
 const router = Router();
 
+// todas las rutas de eventos necesitan usuario autenticado
+router.use(authMiddleware);
+
+router.get("/my", GetMyEvents);
 router.get("/", GetAllEvent);
 router.get("/:id", idEventValidation, validate, GetEventId);
-router.post(
-  "/",
-  auth,
-  authorizeRoles("admin", "organizer"),
-  validateCreateEvent,
-  validate,
-  CreateEvent,
-);
+router.post("/", validateCreateEvent, validate, CreateEvent);
 router.put(
   "/:id",
-  auth,
-  authorizeRoles("admin", "organizer"),
   idEventValidation,
+  validate,
+  ownerOrAdminMiddleware,
   validateUpdateEvent,
   validate,
   UpdateEvent,
 );
 router.delete(
   "/:id",
-  auth,
-  authorizeRoles("admin"),
   idEventValidation,
   validate,
+  ownerOrAdminMiddleware,
   DeleteEvent,
 );
 
