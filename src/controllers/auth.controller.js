@@ -1,16 +1,25 @@
 import { matchedData } from "express-validator";
 import { generateToken } from "../helpers/jwt.js";
-import { User } from "../models/user.model.js";
+import userModel from "../models/user.model.js";
 import { hashPassword, comparePassword } from "../helpers/bcrypt.js";
+import { flattenObject } from "../helpers/flatten.js";
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  path: "/",
+};
 
 export const Register = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
 
-    const user = await User.create({
+    const user = await userModel.create({
       username: data.username,
       email: data.email,
       password: await hashPassword(data.password),
+      profile: data.profile,
     });
 
     return res.status(201).json({
@@ -20,6 +29,7 @@ export const Register = async (req, res, next) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        profile: user.profile,
       },
     });
   } catch (error) {
@@ -29,10 +39,12 @@ export const Register = async (req, res, next) => {
 export const Login = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ["body"] });
-    const user = await User.findOne({
-      email: data.email,
-      deleted: false,
-    }).select("+password");
+    const user = await userModel
+      .findOne({
+        email: data.email,
+        deletedAt: null,
+      })
+      .select("+password");
 
     if (!user) {
       return res
@@ -49,11 +61,8 @@ export const Login = async (req, res, next) => {
 
     const token = generateToken(user);
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      ...cookieOptions,
       maxAge: 24 * 60 * 60 * 1000,
-      path: "/",
     });
     return res.status(200).json({
       message: "Inicio de sesion correcto",
@@ -70,7 +79,7 @@ export const Login = async (req, res, next) => {
 };
 export const Logout = async (req, res, next) => {
   try {
-    res.clearCookie("token");
+    res.clearCookie("token", cookieOptions);
 
     return res.status(200).json({ message: "Sesion cerrada correctamente" });
   } catch (error) {
@@ -79,17 +88,42 @@ export const Logout = async (req, res, next) => {
 };
 export const GetProfile = async (req, res, next) => {
   try {
-    const user = await User.findOne({
+    const user = await userModel.findOne({
       _id: req.user.id,
-      deleted: false,
+      deletedAt: null,
     });
     if (!user) {
       return res.status(404).json({
         message: "Usuario no encontrado",
       });
     }
-    return res.status(201).json({
+    return res.status(200).json({
       message: "Perfil obtenido correctamente",
+      resource: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const UpdateProfile = async (req, res, next) => {
+  try {
+    const data = matchedData(req, { locations: ["body"] });
+    const user = await userModel.findOne({
+      _id: req.user.id,
+      deletedAt: null,
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+
+    // se actualizan solo los campos enviados dentro del perfil embebido
+    user.set(flattenObject(data, "profile"));
+    await user.save();
+
+    return res.status(200).json({
+      message: "Perfil actualizado correctamente",
       resource: user,
     });
   } catch (error) {

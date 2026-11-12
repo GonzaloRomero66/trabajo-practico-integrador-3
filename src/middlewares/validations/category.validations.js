@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import { Category } from "../../models/category.model.js";
+import categoryModel from "../../models/category.model.js";
 
 export const idCategoryValidation = [
   param("id").isMongoId().withMessage("El ID de la categoría no es válido"),
@@ -15,10 +15,7 @@ export const createCategoryValidation = [
     .withMessage("El nombre debe de ser entre 2 a 30 caracteres")
     .bail()
     .custom(async (name) => {
-      const category = await Category.findOne({
-        name,
-        deleted: false,
-      });
+      const category = await categoryModel.findOne({ name });
 
       if (category) {
         throw new Error("Ya existe una categoría con ese nombre");
@@ -47,9 +44,8 @@ export const updateCategoryValidation = [
     .withMessage("El nombre debe de ser de 2 a 30 caracteres")
     .bail()
     .custom(async (name, { req }) => {
-      const category = await Category.findOne({
+      const category = await categoryModel.findOne({
         name,
-        deleted: false,
         _id: { $ne: req.params.id },
       });
 
@@ -66,24 +62,5 @@ export const updateCategoryValidation = [
     .withMessage("La descripción debe ser un texto")
     .bail()
     .isLength({ max: 200 })
-    .withMessage("La descripción debe de ser de 200 caracteres"),
-];
-
-export const categoryExistsValidation = [
-  param("id")
-    .isMongoId()
-    .withMessage("El ID de la categoría no es válido")
-    .bail()
-    .custom(async (id) => {
-      const category = await Category.findOne({
-        _id: id,
-        deleted: false,
-      });
-
-      if (!category) {
-        throw new Error("Categoría no encontrada");
-      }
-
-      return true;
-    }),
+    .withMessage("La descripción solo puede ser de 200 caracteres"),
 ];

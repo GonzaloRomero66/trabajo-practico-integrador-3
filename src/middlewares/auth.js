@@ -1,9 +1,9 @@
-import { verifyToken } from "../helpers/jwt";
-import { User } from "../models/user.model";
+import { verifyToken } from "../helpers/jwt.js";
+import UserModel from "../models/user.model.js";
 
-export const auth = async (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
@@ -12,7 +12,7 @@ export const auth = async (req, res, next) => {
     }
     const decoded = verifyToken(token);
 
-    const user = await User.findOne({ _id: decoded.id, deleted: false });
+    const user = await UserModel.findOne({ _id: decoded.id, deletedAt: null });
 
     if (!user) {
       return res.status(401).json({ message: "La sesion no es valida" });
